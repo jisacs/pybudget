@@ -1,4 +1,6 @@
 import csv
+import math
+import matplotlib.pyplot as plt
 import inspect
 import pickle
 import operation as op_lib
@@ -317,30 +319,47 @@ class Application():
                 
                 
     def pie(self):
+        self.draw_pie(self.persons,op_lib.person)
+        self.draw_pie(self.categories,op_lib.category)
+        
+    def draw_pie(self,items,filter_item):
         """
         Compute and display graphical pie account by person or caterories filtered by self.filters
         """
-        reponses=('category', 'person')
-        cmd = self.ask("financial pie > ", helps=reponses)
-        by_item={}
-        filtered_operations = self.get_filtered_operations()
-        if cmd == 'category':
-            by_item,foo = self.get_total_by_item(filtered_operations,montant_filter = NEGATIVE_FILTER)
-        elif cmd == 'person':
-            foo, by_item = self.get_total_by_item(filtered_operations,montant_filter = NEGATIVE_FILTER)
-        
-        total = sum(by_item.values())
-        by_item = { k : (v/total*100) for k,v in by_item.items() }
-
-        values = list(by_item.values())
-        labels = list(by_item.keys())
-        
-        import matplotlib.pyplot as plt
-        plt.pie(values, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
-        # Set aspect ratio to be equal so that pie is drawn as a circle.
-        plt.axis('equal')
+        by_item={} 
+        # multiple subplots
+        plot_id = 0
+        nb_plot = len(items)
+        nb_row = int(math.sqrt(nb_plot))
+        nb_line = nb_row+1
+        f, axarr = plt.subplots(nb_line,nb_row, sharex=True)
+        old_filters = self.filters
+        for item in items:
+            self.filters=dict()
+            self.filters[op_lib.data_label[filter_item]]=item
+            filtered_operations = self.get_filtered_operations()
+            by_cat,by_pers = self.get_total_by_item(filtered_operations,montant_filter = NEGATIVE_FILTER)
+            if filter_item == op_lib.person:
+                total = sum(by_cat.values())
+                by_cat = { k : (v/total*100) for k,v in by_cat.items() }
+                values = list(by_cat.values())
+                labels = list(by_cat.keys())
+            elif filter_item == op_lib.category:
+                total = sum(by_pers.values())
+                by_pers = { k : (v/total*100) for k,v in by_pers.items() }
+                values = list(by_pers.values())
+                labels = list(by_pers.keys())
+                
+            line = int(plot_id/nb_row)
+            row = plot_id%nb_row
+            axarr[line,row].pie(values, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
+            axarr[line,row].set_title(item)
+            plot_id+=1
+            # Set aspect ratio to be equal so that pie is drawn as a circle.
+            plt.axis('equal')
+            
         plt.show()
-        
+        self.filters = old_filters
         
         
             
