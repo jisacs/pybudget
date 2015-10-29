@@ -1,4 +1,5 @@
 import csv
+import numpy as np
 import math
 import matplotlib.pyplot as plt
 import inspect
@@ -383,6 +384,12 @@ class Application():
         if nb_plot == 0:
             return
         plot_id = 0
+        colors = ['yellowgreen', 'gold', 'lightskyblue', 'lightcoral']
+        cmap_colors = ['Blues', 'BuGn', 'BuPu',
+                             'GnBu', 'Greens', 'Greys', 'Oranges', 'OrRd',
+                             'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu',
+                             'Reds', 'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd']
+        cmap = plt.cm.hsv
         if nb_plot > 1 :
             nb_row = math.ceil((math.sqrt(nb_plot)))
             nb_line = nb_row-1
@@ -392,13 +399,15 @@ class Application():
         
         for key,totals in pies.items():    
             total = sum(totals.values())
+            print('DEBUG ', len(totals))
             totals = { k : (v/total*100) for k,v in totals.items() }
+            colors = cmap(np.linspace(0., 1., len(totals)))
             if nb_plot == 1 :
-                plt.pie(list(totals.values()), labels=list(totals.keys()), autopct='%1.1f%%', shadow=True, startangle=90)
+                plt.pie(list(totals.values()), colors=colors,labels=list(totals.keys()), autopct='%1.1f%%', shadow=True, startangle=90)
             else:
                 line = int(plot_id/nb_row)
                 row = plot_id%nb_row
-                axarr[line,row].pie(list(totals.values()), labels=list(totals.keys()), autopct='%1.1f%%', shadow=True, startangle=90)
+                axarr[line,row].pie(list(totals.values()),colors=colors, labels=list(totals.keys()), autopct='%1.1f%%', shadow=True, startangle=90)
                 total_str = '{:,.2f} Eur'.format(total)
                 axarr[line,row].set_title(key+" " + str(total_str))
                 plot_id+=1
