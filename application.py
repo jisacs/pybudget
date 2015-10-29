@@ -319,23 +319,33 @@ class Application():
                 
                 
     def pie(self):
-        self.draw_pie(self.persons,op_lib.person)
-        self.draw_pie(self.categories,op_lib.category)
-        self.draw_pie()
+        helps=(op_lib.data_label[op_lib.person],op_lib.data_label[op_lib.category])  
+        cmd = self.ask("pie > ",helps=helps)
+        if cmd == op_lib.data_label[op_lib.person]:
+            self.draw_by_item_pie(op_lib.person)
+        elif cmd == op_lib.data_label[op_lib.category]:
+            self.draw_by_item_pie(op_lib.category)
         
-    def draw_pie(self,items=None,filter_item=None):
+    def draw_by_item_pie(self,item): #items=None,filter_item=None):
         """
         Compute and display graphical pie account by person or caterories filtered by self.filters
         """
-        by_item={} 
+        if item == op_lib.person:
+            items=self.persons
+            filter_item = op_lib.person
+        elif item == op_lib.category:
+            items=self.categories
+            filter_item = op_lib.category
+            
         pies=dict()
         plot_id = 0
         
-        if items != None:
-            old_filters = self.filters
+        old_filters = self.filters
+        if items!=None:
             for item in items:
                 self.filters=dict()
-                self.filters[op_lib.data_label[filter_item]]=item
+                if filter_item != None:
+                    self.filters[op_lib.data_label[filter_item]]=item
                 filtered_operations = self.get_filtered_operations()
                 by_cat,by_pers = self.get_total_by_item(filtered_operations,montant_filter = NEGATIVE_FILTER)
                 if filter_item == op_lib.person:
@@ -345,12 +355,12 @@ class Application():
                 if len(totals) > 1:
                     pies[item]=totals
             
-        else: # item == None
-            by_cat,by_pers = self.get_total_by_item(filtered_operations,montant_filter = NEGATIVE_FILTER)
-            totals = by_cat
-            pies[item]=totals
-            
         nb_plot = len(pies)
+        if nb_plot == 0:
+            return
+        if nb_plot == 1 :
+            f, axarr = plt.subplots(1)
+            
         nb_row = math.ceil((math.sqrt(nb_plot)))
         nb_line = nb_row-1
         while nb_line * nb_row < nb_plot:
@@ -360,9 +370,12 @@ class Application():
         for key,totals in pies.items():    
             total = sum(totals.values())
             totals = { k : (v/total*100) for k,v in totals.items() }
-            line = int(plot_id/nb_row)
-            row = plot_id%nb_row
-            axarr[line,row].pie(list(totals.values()), labels=list(totals.keys()), autopct='%1.1f%%', shadow=True, startangle=90)
+            if nb_plot == 1 :
+                axarr[0].pie(list(totals.values()), labels=list(totals.keys()), autopct='%1.1f%%', shadow=True, startangle=90)
+            else:
+                line = int(plot_id/nb_row)
+                row = plot_id%nb_row
+                axarr[line,row].pie(list(totals.values()), labels=list(totals.keys()), autopct='%1.1f%%', shadow=True, startangle=90)
             total_str = '{:,.2f} Eur'.format(total)
             axarr[line,row].set_title(key+" " + str(total_str))
             plot_id+=1
