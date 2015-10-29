@@ -333,6 +333,8 @@ class Application():
         by_cat,by_pers = self.get_total_by_item(self.operations,montant_filter = NEGATIVE_FILTER)
         pies={'global category': by_cat} 
         self.draw_pies(pies)
+        pies={'global person': by_pers} 
+        self.draw_pies(pies)
         
         
         
