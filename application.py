@@ -319,16 +319,29 @@ class Application():
                 
                 
     def pie(self):
-        helps=(op_lib.data_label[op_lib.person],op_lib.data_label[op_lib.category])  
+        helps=('global', op_lib.data_label[op_lib.person],op_lib.data_label[op_lib.category])  
         cmd = self.ask("pie > ",helps=helps)
-        if cmd == op_lib.data_label[op_lib.person]:
-            self.draw_by_item_pie(op_lib.person)
+        if cmd == 'global':
+            self.draw_global_pies()
+        elif cmd == op_lib.data_label[op_lib.person]:
+            self.draw_by_item_pies(op_lib.person)
         elif cmd == op_lib.data_label[op_lib.category]:
-            self.draw_by_item_pie(op_lib.category)
+            self.draw_by_item_pies(op_lib.category)
         
-    def draw_by_item_pie(self,item): #items=None,filter_item=None):
+        
+    def draw_global_pies(self): 
+        by_cat,by_pers = self.get_total_by_item(self.operations,montant_filter = NEGATIVE_FILTER)
+        pies={'global category': by_cat} 
+        self.draw_pies(pies)
+        
+        
+        
+    def draw_by_item_pies(self,item): 
         """
         Compute and display graphical pie account by person or caterories filtered by self.filters
+        Parameters
+        **********
+        item: str, 'person' or 'category'
         """
         if item == op_lib.person:
             items=self.persons
@@ -338,8 +351,6 @@ class Application():
             filter_item = op_lib.category
             
         pies=dict()
-        plot_id = 0
-        
         old_filters = self.filters
         if items!=None:
             for item in items:
@@ -354,35 +365,44 @@ class Application():
                     totals = by_pers
                 if len(totals) > 1:
                     pies[item]=totals
+            self.draw_pies(pies)    
+        self.filters = old_filters
             
+            
+            
+    def draw_pies(self,pies):                    
+        """
+        Display pies with matplotlib
+        Parameters
+        **********
+        pies: dict. key: title, value dict : key item ,  value montant 
+        """
         nb_plot = len(pies)
         if nb_plot == 0:
             return
-        if nb_plot == 1 :
-            f, axarr = plt.subplots(1)
-            
-        nb_row = math.ceil((math.sqrt(nb_plot)))
-        nb_line = nb_row-1
-        while nb_line * nb_row < nb_plot:
-            nb_line+=1
-        f, axarr = plt.subplots(nb_line,nb_row)
+        plot_id = 0
+        if nb_plot > 1 :
+            nb_row = math.ceil((math.sqrt(nb_plot)))
+            nb_line = nb_row-1
+            while nb_line * nb_row < nb_plot:
+                nb_line+=1
+            f, axarr = plt.subplots(nb_line,nb_row)
         
         for key,totals in pies.items():    
             total = sum(totals.values())
             totals = { k : (v/total*100) for k,v in totals.items() }
             if nb_plot == 1 :
-                axarr[0].pie(list(totals.values()), labels=list(totals.keys()), autopct='%1.1f%%', shadow=True, startangle=90)
+                plt.pie(list(totals.values()), labels=list(totals.keys()), autopct='%1.1f%%', shadow=True, startangle=90)
             else:
                 line = int(plot_id/nb_row)
                 row = plot_id%nb_row
                 axarr[line,row].pie(list(totals.values()), labels=list(totals.keys()), autopct='%1.1f%%', shadow=True, startangle=90)
-            total_str = '{:,.2f} Eur'.format(total)
-            axarr[line,row].set_title(key+" " + str(total_str))
-            plot_id+=1
+                total_str = '{:,.2f} Eur'.format(total)
+                axarr[line,row].set_title(key+" " + str(total_str))
+                plot_id+=1
             # Set aspect ratio to be equal so that pie is drawn as a circle.
             plt.axis('equal')
         plt.show()
-        self.filters = old_filters
         
         
             
