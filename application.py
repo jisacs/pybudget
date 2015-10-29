@@ -1,4 +1,4 @@
-import csv
+import  csv
 import numpy as np
 import math
 import matplotlib.pyplot as plt
@@ -320,26 +320,35 @@ class Application():
                 
                 
     def pie(self):
-        helps=('global', op_lib.data_label[op_lib.person],op_lib.data_label[op_lib.category])  
-        cmd = self.ask("pie > ",helps=helps)
-        if cmd == 'global':
-            self.draw_global_pies()
-        elif cmd == op_lib.data_label[op_lib.person]:
-            self.draw_by_item_pies(op_lib.person)
-        elif cmd == op_lib.data_label[op_lib.category]:
-            self.draw_by_item_pies(op_lib.category)
+        min_percent = 0
+        while True:
+            try:
+                helps=('min_percent', 'global', op_lib.data_label[op_lib.person],op_lib.data_label[op_lib.category])  
+                cmd = self.ask("pie [" + str(min_percent) + "%] ",helps=helps)
+                if cmd == 'global':
+                    self.draw_global_pies(min_percent=min_percent)
+                elif cmd == op_lib.data_label[op_lib.person]:
+                    self.draw_by_item_pies(op_lib.person,min_percent=min_percent)
+                elif cmd == op_lib.data_label[op_lib.category]:
+                    self.draw_by_item_pies(op_lib.category,min_percent=min_percent)
+                elif cmd == 'min_percent':
+                    min_percent =self.ask_int("pie min percent ? > ")
+            except UserInterrupt:
+                break
+            except KeyboardInterrupt:
+                break
         
         
-    def draw_global_pies(self): 
+    def draw_global_pies(self,min_percent=0): 
         by_cat,by_pers = self.get_total_by_item(self.operations,montant_filter = NEGATIVE_FILTER)
         pies={'global category': by_cat} 
-        self.draw_pies(pies)
+        self.draw_pies(pies,min_percent=min_percent)
         pies={'global person': by_pers} 
-        self.draw_pies(pies)
+        self.draw_pies(pies,min_percent=min_percent)
         
         
         
-    def draw_by_item_pies(self,item): 
+    def draw_by_item_pies(self,item,min_percent=0): 
         """
         Compute and display graphical pie account by person or caterories filtered by self.filters
         Parameters
@@ -368,12 +377,12 @@ class Application():
                     totals = by_pers
                 if len(totals) > 1:
                     pies[item]=totals
-            self.draw_pies(pies)    
+            self.draw_pies(pies,min_percent=min_percent)    
         self.filters = old_filters
             
             
             
-    def draw_pies(self,pies):                    
+    def draw_pies(self,pies,min_percent=0):                    
         """
         Display pies with matplotlib
         Parameters
@@ -385,6 +394,7 @@ class Application():
             return
         plot_id = 0
         cmap = plt.cm.hsv
+        cmap = plt.cm.Paired
         if nb_plot > 1 :
             nb_row = math.ceil((math.sqrt(nb_plot)))
             nb_line = nb_row-1
@@ -394,14 +404,18 @@ class Application():
         
         for key,totals in pies.items():    
             total = sum(totals.values())
-            totals = { k : (v/total*100) for k,v in totals.items() }
+            tmp_totals = { k : (v/total*100) for k,v in totals.items() if  (v/total*100) > min_percent }
+            totals=tmp_totals
+            # We have remove percent lower tahn  min_percent, need to recompure total
             colors = cmap(np.linspace(0., 1., len(totals)))
+            slices = list(totals.values())
+            
             if nb_plot == 1 :
-                plt.pie(list(totals.values()), colors=colors,labels=list(totals.keys()), autopct='%1.1f%%', shadow=True, startangle=90)
+                plt.pie(slices, colors=colors,labels=totals.keys(), autopct='%1.1f%%', shadow=True, startangle=340)
             else:
                 line = int(plot_id/nb_row)
                 row = plot_id%nb_row
-                axarr[line,row].pie(list(totals.values()),colors=colors, labels=list(totals.keys()), autopct='%1.1f%%', shadow=True, startangle=90)
+                axarr[line,row].pie(slices,colors=colors, labels=totals.keys(), autopct='%1.1f%%', shadow=True, startangle=300)
                 total_str = '{:,.2f} Eur'.format(total)
                 axarr[line,row].set_title(key+" " + str(total_str))
                 plot_id+=1
@@ -521,9 +535,6 @@ class Application():
                         except UserInterrupt:
                             break
                         
-                        
-                        
-                
                 #operations
                 elif item == 'operations' or item == 'o':
                     # let user choose an operation
