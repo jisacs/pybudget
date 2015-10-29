@@ -302,10 +302,7 @@ class Application():
             foo, by_item = self.get_total_by_item(filtered_operations,negative_only = True)
         
         total = sum(by_item.values())
-        print("DEBUG 1", by_item)
-        print("DEBUG total", total)
         by_item = { k : (v/total*100) for k,v in by_item.items() }
-        print("DEBUG 2", by_item)
 
         values = list(by_item.values())
         labels = list(by_item.keys())
