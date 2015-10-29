@@ -384,11 +384,6 @@ class Application():
         if nb_plot == 0:
             return
         plot_id = 0
-        colors = ['yellowgreen', 'gold', 'lightskyblue', 'lightcoral']
-        cmap_colors = ['Blues', 'BuGn', 'BuPu',
-                             'GnBu', 'Greens', 'Greys', 'Oranges', 'OrRd',
-                             'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu',
-                             'Reds', 'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd']
         cmap = plt.cm.hsv
         if nb_plot > 1 :
             nb_row = math.ceil((math.sqrt(nb_plot)))
@@ -399,7 +394,6 @@ class Application():
         
         for key,totals in pies.items():    
             total = sum(totals.values())
-            print('DEBUG ', len(totals))
             totals = { k : (v/total*100) for k,v in totals.items() }
             colors = cmap(np.linspace(0., 1., len(totals)))
             if nb_plot == 1 :
