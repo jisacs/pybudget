@@ -321,32 +321,42 @@ class Application():
     def pie(self):
         self.draw_pie(self.persons,op_lib.person)
         self.draw_pie(self.categories,op_lib.category)
+        self.draw_pie()
         
-    def draw_pie(self,items,filter_item):
+    def draw_pie(self,items=None,filter_item=None):
         """
         Compute and display graphical pie account by person or caterories filtered by self.filters
         """
         by_item={} 
         pies=dict()
         plot_id = 0
-        old_filters = self.filters
-        for item in items:
-            self.filters=dict()
-            self.filters[op_lib.data_label[filter_item]]=item
-            filtered_operations = self.get_filtered_operations()
+        
+        if items != None:
+            old_filters = self.filters
+            for item in items:
+                self.filters=dict()
+                self.filters[op_lib.data_label[filter_item]]=item
+                filtered_operations = self.get_filtered_operations()
+                by_cat,by_pers = self.get_total_by_item(filtered_operations,montant_filter = NEGATIVE_FILTER)
+                if filter_item == op_lib.person:
+                    totals = by_cat
+                elif filter_item == op_lib.category:
+                    totals = by_pers
+                if len(totals) > 1:
+                    pies[item]=totals
+            
+        else: # item == None
             by_cat,by_pers = self.get_total_by_item(filtered_operations,montant_filter = NEGATIVE_FILTER)
-            if filter_item == op_lib.person:
-                totals = by_cat
-            elif filter_item == op_lib.category:
-                totals = by_pers
-            if len(totals) > 1:
-                pies[item]=totals
+            totals = by_cat
+            pies[item]=totals
+            
         nb_plot = len(pies)
         nb_row = math.ceil((math.sqrt(nb_plot)))
         nb_line = nb_row-1
         while nb_line * nb_row < nb_plot:
             nb_line+=1
         f, axarr = plt.subplots(nb_line,nb_row)
+        
         for key,totals in pies.items():    
             total = sum(totals.values())
             totals = { k : (v/total*100) for k,v in totals.items() }
