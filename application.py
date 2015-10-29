@@ -327,26 +327,37 @@ class Application():
         Compute and display graphical pie account by person or caterories filtered by self.filters
         """
         by_item={} 
-        # multiple subplots
+        pies=dict()
         plot_id = 0
-        nb_plot = len(items)
-        nb_row = int(math.sqrt(nb_plot))
-        nb_line = nb_row+1
-        f, axarr = plt.subplots(nb_line,nb_row, sharex=True)
         old_filters = self.filters
         for item in items:
             self.filters=dict()
             self.filters[op_lib.data_label[filter_item]]=item
             filtered_operations = self.get_filtered_operations()
             by_cat,by_pers = self.get_total_by_item(filtered_operations,montant_filter = NEGATIVE_FILTER)
+            
             if filter_item == op_lib.person:
                 totals = by_cat
             elif filter_item == op_lib.category:
                 totals = by_pers
-                total = sum(totals.values())
-                by_pers = { k : (v/total*100) for k,v in totals.items() }
-                values = list(totals.values())
-                labels = list(totals.keys())
+                
+            if len(totals) > 1:
+                pies[item]=totals
+                
+        nb_plot = len(pies)
+        nb_row = math.ceil((math.sqrt(nb_plot)))
+        nb_line = nb_row-1
+        while nb_line * nb_row < nb_plot:
+            nb_line+=1
+        print('nb_plot',nb_plot, 'nb_line', nb_line, 'nb_row', nb_row)
+
+        f, axarr = plt.subplots(nb_line,nb_row)
+        for totals in pies.values():    
+            total = sum(totals.values())
+            totals = { k : (v/total*100) for k,v in totals.items() }
+                
+            values = list(totals.values())
+            labels = list(totals.keys())
                 
             line = int(plot_id/nb_row)
             row = plot_id%nb_row
