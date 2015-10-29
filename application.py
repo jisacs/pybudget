@@ -349,10 +349,9 @@ class Application():
         nb_line = nb_row-1
         while nb_line * nb_row < nb_plot:
             nb_line+=1
-        print('nb_plot',nb_plot, 'nb_line', nb_line, 'nb_row', nb_row)
 
         f, axarr = plt.subplots(nb_line,nb_row)
-        for totals in pies.values():    
+        for key,totals in pies.items():    
             total = sum(totals.values())
             totals = { k : (v/total*100) for k,v in totals.items() }
                 
@@ -362,7 +361,8 @@ class Application():
             line = int(plot_id/nb_row)
             row = plot_id%nb_row
             axarr[line,row].pie(values, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
-            axarr[line,row].set_title(item)
+            total_str = '{:,.2f} Eur'.format(total)
+            axarr[line,row].set_title(key+" " + str(total_str))
             plot_id+=1
             # Set aspect ratio to be equal so that pie is drawn as a circle.
             plt.axis('equal')
