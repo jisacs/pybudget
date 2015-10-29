@@ -237,20 +237,25 @@ class Application():
         """
         solde = 0.
         filtered_operations = self.get_filtered_operations()
+            
         for op in filtered_operations.values():
             print (op)
             solde+=float(op.data[op_lib.montant].replace(',','.'))
+            
+            
+        by_category , by_person = self.get_total_by_item(filtered_operations)
+        print("*********************\nCategories\n********************")
+        for key,value  in by_category.items():
+            print('{} {:,.2f} Eur'.format(key,value))
+        print("*********************\nPersons\n********************")
+        for key,value  in by_person.items():
+            print('{} {:,.2f} Eur'.format(key,value))
         if solde >= 0.:
             print(Back.GREEN)
         else: print(Back.RED)
         print('{} : {:,.2f} Eur'.format('Balance   ', solde))
         print(Style.RESET_ALL)
         
-        by_category , by_person = self.get_total_by_item(filtered_operations)
-        for key,value  in by_category.items():
-            print('{} {}'.format(key,value))
-        for key,value  in by_person.items():
-            print('{} {}'.format(key,value))
         
         
         
