@@ -15,6 +15,8 @@ LIST_PIC= 'list_pic'
 ADD = 'add'
 readline.parse_and_bind('tab: complete')
 
+POSITIVE_FILTER = 'POS'
+NEGATIVE_FILTER = 'NEG'
 
 class UserInterrupt(BaseException):
     """Exception raised for quit, q or Q keyboard enter
@@ -261,7 +263,7 @@ class Application():
         
         
         
-    def get_total_by_item(self,operations,negative_only = False):
+    def get_total_by_item(self,operations,montant_filter = None):
         """
         Parameters
         **********
@@ -276,7 +278,8 @@ class Application():
         by_person={}
         for op in operations.values():
             montant = float(op.data[op_lib.montant].strip().replace(',','.'))
-            if negative_only == True and montant >=0. :  continue
+            if montant_filter == NEGATIVE_FILTER and montant >=0. :  continue
+            elif montant_filter == POSITIVE_FILTER and montant <=0. :  continue
             cat = op.category
             person = op.person
             if cat in by_category: by_category[cat]+=montant
@@ -297,9 +300,9 @@ class Application():
         by_item={}
         filtered_operations = self.get_filtered_operations()
         if cmd == 'category':
-            by_item,foo = self.get_total_by_item(filtered_operations,negative_only = True)
+            by_item,foo = self.get_total_by_item(filtered_operations,montant_filter = NEGATIVE_FILTER)
         elif cmd == 'person':
-            foo, by_item = self.get_total_by_item(filtered_operations,negative_only = True)
+            foo, by_item = self.get_total_by_item(filtered_operations,montant_filter = NEGATIVE_FILTER)
         
         total = sum(by_item.values())
         by_item = { k : (v/total*100) for k,v in by_item.items() }
