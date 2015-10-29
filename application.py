@@ -157,14 +157,20 @@ class Application():
         """
         return int from self.ask()
         """
-        return int(self.ask(question,default,helps))
+        while True:
+            try:
+                value =  int(self.ask(question,default,helps))
+                return value
+            except  ValueError:
+                print("Not an integer value")
+         
     
     
     
     def menu(self):
         try:
             while True:
-                helps= {'filters': 'list/add suppress filters', 'save': 'to save','add ': 'to add new operations from csv file',
+                helps= {'pie': 'graphical pies', 'filters': 'list/add suppress filters', 'save': 'to save','add ': 'to add new operations from csv file',
                         'edit': 'to edit database', 'list':'to list database content',
                         'open_db ':'open database file', 'open_csv': 'open csv file' ,
                         'financial   ': 'financial review'} 
@@ -188,6 +194,8 @@ class Application():
                     self.financial()
                 elif cmd == 'filters':
                     self.manage_filters()
+                elif cmd == 'pie':
+                    self.pie()
                 else: print(cmd, ": command not found")
         except UserInterrupt:
             pass
@@ -404,9 +412,9 @@ class Application():
         
         for key,totals in pies.items():    
             total = sum(totals.values())
-            tmp_totals = { k : (v/total*100) for k,v in totals.items() if  (v/total*100) > min_percent }
-            totals=tmp_totals
-            # We have remove percent lower tahn  min_percent, need to recompure total
+            totals = { k : (v/total*100) for k,v in totals.items() if  (v/total*100) > min_percent }
+            # We have remove entrry that  percent lower tahn  min_percent, need to recompure total
+            total = sum(totals.values())
             colors = cmap(np.linspace(0., 1., len(totals)))
             slices = list(totals.values())
             
@@ -471,12 +479,10 @@ class Application():
         try:
             while True:
                 try:
-                    helps={'list': 'list filtered operations', 'pie': 'draw pie', 'balance': 'get balance for current filters', "filters": 'add/suppress filters'} 
+                    helps={'list': 'list filtered operations',  'balance': 'get balance for current filters', "filters": 'add/suppress filters'} 
                     cmd=self.ask('financial review > ', helps=helps)   
                     if cmd == 'balance':
                         self.balance()
-                    elif cmd == 'pie':
-                        self.pie()
                     elif cmd == 'list':
                         result = self.get_filtered_operations()
                         print (result)
