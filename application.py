@@ -46,12 +46,15 @@ class Application():
       """
       load Application members from self.input_file)
       """
-      infile=open(self.database_file, "rb")
-      loaded = pickle.load(infile)
-      self.operations=loaded['database']
-      self.persons=loaded['whos']
-      self.categories=loaded['categories']
-      self.db_changed = False
+      try:
+          infile=open(self.database_file, "rb")
+          loaded = pickle.load(infile)
+          self.operations=loaded['database']
+          self.persons=loaded['whos']
+          self.categories=loaded['categories']
+          self.db_changed = False
+      except:
+          print("could not open", self.database_file)
 
     def save(self):
         """
@@ -64,7 +67,6 @@ class Application():
                 filename = self.database_file
             outfile=open( filename, "wb" )
             objects={'database':self.operations,'categories':self.categories,'whos':self.persons}
-            att = inspect.getmembers(self.operations[0], lambda a:not(inspect.isroutine(a)))
             pickle.dump(objects, outfile)
             outfile.close()
             self.db_changed = False
@@ -74,6 +76,9 @@ class Application():
    
    
     def run(self):
+        """
+        Application Run 
+        """
         if self.cmd == LIST_PIC:
             self.list_pic()
         elif self.cmd == ADD:
@@ -82,17 +87,21 @@ class Application():
       
     def ask(self,question="?[q]:",default=None,helps=None,new_enable = False):
         """
+        Wait until  user input is coorect and return it.
+        Tab completation is construct on helps list/dict
         Parameters
         **********
         question: str. Question for user
-        helps: dictionary containing commands. If not None only commands from help are accepted( plus quit and help)
-        new_enable: If True new command is available to add entry to helps list
+        helps: list/dict, containing commands. If not None only commands from help are accepted( plus quit and help
+        default: str, return default is user return ''
+        new_enable: If True new command is available to be added to helps list
         
-        Return
+        Returns
         ******
-        int: User choise 
-        raise UserInterrupt: if user choise 'q' or 'Q'
+        str: User choice
+        raise UserInterrupt: if user choise is quit', 'q' or 'Q'
         """
+        # prepare autowords for tab completion
         autowords = list()
         if helps!= None:
             autowords=[word.strip() for word in list(helps)]
@@ -100,35 +109,33 @@ class Application():
         autowords.append('help')
         if new_enable == True : autowords.append('new')
         readline.set_completer(complete.SimpleCompleter(autowords).complete)
-                
+        
+        # set prompt        
         if default != None:
             question = question + " default["+str(default)+"]: "
+            
+        # Until user enter a valid response    
         while True: 
             reponse = input(question)
+            # User enter default ('') ?
             if reponse == '': 
                 if default != None: return default
+            # USer enter help
             elif reponse == 'help':
-                """
-                if reponses!=None:
-                    print(reponses)
-                    print("{} : {}".format('new   ', 'new entry'))
-                """
                 if helps!=None:
                     for key,value in sorted(helps.items()):
                         print("{} : {}".format(key,value ))
-                        
                 print("{} : {}".format('quit   ', 'return to menu'))
             elif reponse == 'q' or reponse == 'Q' or reponse == 'quit':
                 raise UserInterrupt("user want tot quit.")
-            
             elif reponse == 'new':
                 new_value = input('new value ? >')
                 helps.append(new_value)
                 self.db_changed = True
+                # add new value to tab_completion and continue
                 autowords.append(new_value)
                 readline.set_completer(complete.SimpleCompleter(autowords).complete)
                 continue
-            
             #reponse is not empty and not h and not q not new
             if helps == None:
                 return reponse
@@ -139,8 +146,10 @@ class Application():
                 print("not a valid command")
                 
                 
-            
     def ask_int(self,question="?[quit]:", default = None,helps=None):
+        """
+        return int from self.ask()
+        """
         return int(self.ask(question,reponses,default,helps))
     
     
@@ -187,6 +196,9 @@ class Application():
        
        
     def financial(self):
+        """
+        Get financial information, graphs, balance ...
+        """
         filters=dict()
         try:
             while True:
@@ -406,8 +418,9 @@ class Application():
                     
     def addFileContent(self):
     #CATEGORIE
-        if self.input_file == None:
-            self.input_file = self.ask("input file? :",default='data.csv')
+        if self.input_file== None:
+            print("Not input csv file. Open it first with open_csv command")
+            return 
         try :
             with open(self.input_file,encoding='mac_roman', newline='') as csvfile:
                 spamreader = csv.reader(csvfile, delimiter='\t', quotechar='|')
