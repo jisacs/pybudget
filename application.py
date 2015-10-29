@@ -335,38 +335,29 @@ class Application():
             self.filters[op_lib.data_label[filter_item]]=item
             filtered_operations = self.get_filtered_operations()
             by_cat,by_pers = self.get_total_by_item(filtered_operations,montant_filter = NEGATIVE_FILTER)
-            
             if filter_item == op_lib.person:
                 totals = by_cat
             elif filter_item == op_lib.category:
                 totals = by_pers
-                
             if len(totals) > 1:
                 pies[item]=totals
-                
         nb_plot = len(pies)
         nb_row = math.ceil((math.sqrt(nb_plot)))
         nb_line = nb_row-1
         while nb_line * nb_row < nb_plot:
             nb_line+=1
-
         f, axarr = plt.subplots(nb_line,nb_row)
         for key,totals in pies.items():    
             total = sum(totals.values())
             totals = { k : (v/total*100) for k,v in totals.items() }
-                
-            values = list(totals.values())
-            labels = list(totals.keys())
-                
             line = int(plot_id/nb_row)
             row = plot_id%nb_row
-            axarr[line,row].pie(values, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
+            axarr[line,row].pie(list(totals.values()), labels=list(totals.keys()), autopct='%1.1f%%', shadow=True, startangle=90)
             total_str = '{:,.2f} Eur'.format(total)
             axarr[line,row].set_title(key+" " + str(total_str))
             plot_id+=1
             # Set aspect ratio to be equal so that pie is drawn as a circle.
             plt.axis('equal')
-            
         plt.show()
         self.filters = old_filters
         
