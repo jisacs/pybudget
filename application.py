@@ -320,7 +320,7 @@ class Application():
         try:
             while True:
                 try:
-                    helps={'pie': 'draw pie', 'balance': 'get balance for current filters', "filters": 'add/suppress filters'} 
+                    helps={'list': 'list filtered operations', 'pie': 'draw pie', 'balance': 'get balance for current filters', "filters": 'add/suppress filters'} 
                     cmd=self.ask('financial review > ', helps=helps)   
                     if cmd == 'balance':
                         self.balance()
@@ -328,6 +328,10 @@ class Application():
                         self.pie()
                     elif cmd == 'filters':
                         self.modify_filters()
+                    elif cmd == 'list':
+                        result = self.get_filtered_operations()
+                        print (result)
+                        
                         
                 except UserInterrupt:
                     break
