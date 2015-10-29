@@ -237,25 +237,43 @@ class Application():
         """
         Compute and display account balance filtered by self.filters
         """
-        solde = 0.
+        debit_solde = 0.
+        credit_solde = 0.
         filtered_operations = self.get_filtered_operations()
             
         for op in filtered_operations.values():
-            print (op)
-            solde+=float(op.data[op_lib.montant].replace(',','.'))
+            value = float(op.data[op_lib.montant].replace(',','.'))
+            if value >0.:
+                print(Back.GREEN)
+                credit_solde+=float(op.data[op_lib.montant].replace(',','.'))
+                print (op)
+                print(Style.RESET_ALL)
+            else:
+                print(Back.RED)
+                print (op)
+                debit_solde+=float(op.data[op_lib.montant].replace(',','.'))
+                print(Style.RESET_ALL)
             
-            
-        by_category , by_person = self.get_total_by_item(filtered_operations)
-        print("*********************\nCategories\n********************")
+        by_category , by_person = self.get_total_by_item(filtered_operations,montant_filter=NEGATIVE_FILTER)
+        print("*********************\nCategories DEDIT\n********************")
         for key,value  in by_category.items():
             print('{} {:,.2f} Eur'.format(key,value))
-        print("*********************\nPersons\n********************")
+        print("*********************\nPersons DEBIT\n********************")
         for key,value  in by_person.items():
             print('{} {:,.2f} Eur'.format(key,value))
-        if solde >= 0.:
-            print(Back.GREEN)
-        else: print(Back.RED)
-        print('{} : {:,.2f} Eur'.format('Balance   ', solde))
+            
+        by_category , by_person = self.get_total_by_item(filtered_operations,montant_filter=POSITIVE_FILTER)
+        print("*********************\nCategories CREDIT\n********************")
+        for key,value  in by_category.items():
+            print('{} {:,.2f} Eur'.format(key,value))
+        print("*********************\nPersons CREDIT\n********************")
+        for key,value  in by_person.items():
+            print('{} {:,.2f} Eur'.format(key,value))
+            
+        print(Back.GREEN)
+        print('{} : {:,.2f} Eur'.format('Credit   ', credit_solde))
+        print(Back.RED)
+        print('{} : {:,.2f} Eur'.format('Credit   ', debit_solde))
         print(Style.RESET_ALL)
         
         
