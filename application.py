@@ -15,16 +15,9 @@ LIST_PIC= 'list_pic'
 ADD = 'add'
 readline.parse_and_bind('tab: complete')
 
-"""
-                helps= {'s   ': 'to save','a   ': 'to add new operations from csv file',
-                        'e   ': 'to edit database', 'l   ':'to list database content',
-                        'odb ':'open database file', 'ocvs': 'open csv file' ,
-                        'f   ': 'financial review'} 
-"""
 
 class UserInterrupt(BaseException):
-    """Exception raised for q or Q keyboard enter
-
+    """Exception raised for quit, q or Q keyboard enter
     Attributes
         message -- explanation of the error
     """
@@ -37,7 +30,6 @@ class Application():
     def __init__(self,args): 
         self.cmd = ""
         self.input_file =None
-        self.output_file = None
         self.database_file=None
         self.categories=list()
         self.persons=list()
@@ -46,60 +38,35 @@ class Application():
      
         if type(args.cmd) == str: self.cmd = args.cmd
         if type(args.input) == str: self.input_file = args.input
-        if type(args.output) == str: self.output_file = args.output
         if type(args.database) == str: self.database_file = args.database
      
-        #self.entries=list()
         if self.database_file != None:
             self.load() #load database values from file
     def load(self):
       """
-      set Application members
+      load Application members from self.input_file)
       """
-      #try:
       infile=open(self.database_file, "rb")
       loaded = pickle.load(infile)
-        
-        
-      """
-      old_operations=loaded['database']
-      for key,old_op  in old_operations.items():
-          new_op = op_lib.Operation()
-          new_op.id = old_op.id
-          new_op.category = old_op.category
-          new_op.person = old_op.who
-          for index in range(7):
-              new_op.data[index]=old_op.data[index]
-          self.operations[key] = new_op
-          att = inspect.getmembers(new_op, lambda a:not(inspect.isroutine(a)))
-          print(att)
-      """
-            
       self.operations=loaded['database']
       self.persons=loaded['whos']
       self.categories=loaded['categories']
       self.db_changed = False
-      #except:
-      #    print('Could not load database')
 
     def save(self):
         """
-        to_save={'database':self.operations,'categories':self.operations,'whos':self.operations,'id':self.operations}
+        Save self.operations, self.categories and self.persons to self.database_file
         """
         try:
-            if self.output_file == None: self.output_file = 'budget.pic'
-            filename= input("Filename ?[" + self.output_file+ "]>")   
+            if self.database_file == None: self.database_file = 'budget.pic'
+            filename= input("Filename ?[" + self.database_file+ "]>")   
             if filename=='': # si aucune entree prendre celle par defaut
-                filename = self.output_file
+                filename = self.database_file
             outfile=open( filename, "wb" )
             objects={'database':self.operations,'categories':self.categories,'whos':self.persons}
             att = inspect.getmembers(self.operations[0], lambda a:not(inspect.isroutine(a)))
-            print(att)
-
-
-                  
             pickle.dump(objects, outfile)
-            outfile.close
+            outfile.close()
             self.db_changed = False
             print('File saved.')
         except:

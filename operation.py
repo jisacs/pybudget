@@ -11,7 +11,6 @@ montant=6
 category=7
 person=8
 
-
 data_label=dict()
 data_label[compte]='compte'
 data_label[date_comptabilisation]='date_comptabilisation'
@@ -37,8 +36,8 @@ class Operation():
     self.id = -1
     self.category = str()
     self.person = str()
-    self.data=dict()
     
+    self.data=dict()
     if cvs_row != None:
         for idx, value in enumerate(cvs_row):
             self.data[idx]=value
