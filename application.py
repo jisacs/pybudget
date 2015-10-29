@@ -247,8 +247,10 @@ class Application():
         print(Style.RESET_ALL)
         
         by_category , by_person = self.get_total_by_item(filtered_operations)
-        print(by_category)
-        print(by_person)
+        for key,value  in by_category.items():
+            print('{} {}'.format(key,value))
+        for key,value  in by_person.items():
+            print('{} {}'.format(key,value))
         
         
         
@@ -289,18 +291,6 @@ class Application():
         cmd = self.ask("financial pie > ", helps=reponses)
         by_item={}
         filtered_operations = self.get_filtered_operations()
-        """
-        for op in filtered_operations.values():
-            montant = float(op.data[op_lib.montant].strip().replace(',','.'))
-            cat = op.category
-            person = op.person
-            if cmd == 'category':
-                if cat in by_item: by_item[cat]+=montant
-                else: by_item[cat]=montant
-            elif cmd == 'person':
-                if person in by_item: by_item[person]+=montant
-                else: by_item[person]=montant
-        """        
         if cmd == 'category':
             by_item,foo = self.get_total_by_item(filtered_operations,negative_only = True)
         elif cmd == 'person':
