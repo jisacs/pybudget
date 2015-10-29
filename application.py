@@ -160,7 +160,7 @@ class Application():
     def menu(self):
         try:
             while True:
-                helps= {'save': 'to save','add ': 'to add new operations from csv file',
+                helps= {'filters': 'list/add suppress filters', 'save': 'to save','add ': 'to add new operations from csv file',
                         'edit': 'to edit database', 'list':'to list database content',
                         'open_db ':'open database file', 'open_csv': 'open csv file' ,
                         'financial   ': 'financial review'} 
@@ -182,6 +182,8 @@ class Application():
                     self.open_csv_file()
                 elif cmd == 'financial':
                     self.financial()
+                elif cmd == 'filters':
+                    self.manage_filters()
                 else: print(cmd, ": command not found")
         except UserInterrupt:
             pass
@@ -389,12 +391,12 @@ class Application():
                         self.balance()
                     elif cmd == 'pie':
                         self.pie()
-                    elif cmd == 'filters':
-                        self.manage_filters()
                     elif cmd == 'list':
                         result = self.get_filtered_operations()
                         print (result)
-                        
+                    elif cmd == 'filters':
+                        self.manage_filters()
+                            
                         
                 except UserInterrupt:
                     break
