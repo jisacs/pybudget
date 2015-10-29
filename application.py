@@ -153,7 +153,7 @@ class Application():
         """
         return int from self.ask()
         """
-        return int(self.ask(question,reponses,default,helps))
+        return int(self.ask(question,default,helps))
     
     
     
@@ -463,7 +463,7 @@ class Application():
                                 cmd=self.ask('edit operations >',helps=choix)
                             if cmd == 'edit':
                                 if ( op_id != None):
-                                    op.category=self.ask('    category?: ',default=op.category,helps=cats)
+                                    op.category=self.ask('    category?: ',default=op.category,helps=self.categories)
                                     op.person=self.ask('    person?: ',default=op.person,helps=self.persons)
                                     op.data[op_lib.libelle]=self.ask('    libelle ? :'+ op.data[op_lib.libelle],default=op.data[op_lib.libelle])
                                     print(Back.GREEN)
@@ -494,7 +494,8 @@ class Application():
                                 print("current operation for edition :\n", op)
                                 print(Style.RESET_ALL)
                             elif cmd == 'list':
-                                print(self.operations)
+                                filtered_operations = self.get_filtered_operations()
+                                print(filtered_operations)
                                 
                             
                         except KeyError:
