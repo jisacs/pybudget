@@ -346,7 +346,7 @@ class Application():
         while True:
             try: # 
                 helps={'list': 'list active filters', 'add': 'add filter', "suppress": 'suppress filter'} 
-                cmd=self.ask('financial filters > ', helps=helps)   
+                cmd=self.ask('filters > ', helps=helps)   
                 if cmd == "add":
                     reponses=list(op_lib.data_label.values())
                     item = self.ask("Add filter > ", helps=reponses)
