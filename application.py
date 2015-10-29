@@ -253,7 +253,8 @@ class Application():
         reponses=('category', 'person')
         cmd = self.ask("financial pie > ", helps=reponses)
         by_item={}
-        for op in self.operations.values():
+        filtered_operations = self.get_filtered_operations()
+        for op in filtered_operations.values():
             montant = float(op.data[op_lib.montant].strip().replace(',','.'))
             cat = op.category
             person = op.person
@@ -276,8 +277,14 @@ class Application():
         # Set aspect ratio to be equal so that pie is drawn as a circle.
         plt.axis('equal')
         plt.show()
+        
+        
+        
             
-    def modify_filters(self):
+    def manage_filters(self):
+        """
+        list, add and suppress filter from self.filters
+        """
         while True:
             try: # 
                 helps={'list': 'list active filters', 'add': 'add filter', "suppress": 'suppress filter'} 
@@ -327,7 +334,7 @@ class Application():
                     elif cmd == 'pie':
                         self.pie()
                     elif cmd == 'filters':
-                        self.modify_filters()
+                        self.manage_filters()
                     elif cmd == 'list':
                         result = self.get_filtered_operations()
                         print (result)
