@@ -231,13 +231,14 @@ class Application():
         print("DEBUG", result)        
         return result
     
+    
     def balance(self):
         """
         Compute and display account balance filtered by self.filters
         """
         solde = 0.
-        result = self.get_filtered_operations()
-        for op in result.values():
+        filtered_operations = self.get_filtered_operations()
+        for op in filtered_operations.values():
             print (op)
             solde+=float(op.data[op_lib.montant].replace(',','.'))
         if solde >= 0.:
@@ -246,6 +247,40 @@ class Application():
         print('{} : {:,.2f} Eur'.format('Balance   ', solde))
         print(Style.RESET_ALL)
         
+        by_category , by_person = self.get_total_by_item(get_filtered_operations)
+        print(by_category)
+        print(by_person)
+        
+        
+        
+        
+        
+    def get_total_by_item(self,operations):
+        """
+        Parameters
+        **********
+        operation: dict containing operations
+        
+        Returns
+        *******
+        (dict,dict) 1rst contains total by categories
+                    2nd  contains total by persons
+        """
+        by_category={}
+        by_person={}
+        for op in operations.values():
+            montant = float(op.data[op_lib.montant].strip().replace(',','.'))
+            cat = op.category
+            person = op.person
+            if cat in by_category: by_category[cat]+=montant
+            else: by_category[cat]=0.
+            if person in by_person: by_person[person]+=montant
+            else: by_person[person]=0.
+                
+        return by_category,by_person
+                
+                
+                
     def pie(self):
         """
         Compute and display graphical pie account by person or caterories filtered by self.filters
