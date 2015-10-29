@@ -228,7 +228,6 @@ class Application():
                     
             if filtered == False:
                 result[op.id]=op
-        print("DEBUG", result)        
         return result
     
     
@@ -247,7 +246,7 @@ class Application():
         print('{} : {:,.2f} Eur'.format('Balance   ', solde))
         print(Style.RESET_ALL)
         
-        by_category , by_person = self.get_total_by_item(get_filtered_operations)
+        by_category , by_person = self.get_total_by_item(filtered_operations)
         print(by_category)
         print(by_person)
         
@@ -255,7 +254,7 @@ class Application():
         
         
         
-    def get_total_by_item(self,operations):
+    def get_total_by_item(self,operations,negative_only = False):
         """
         Parameters
         **********
@@ -270,12 +269,13 @@ class Application():
         by_person={}
         for op in operations.values():
             montant = float(op.data[op_lib.montant].strip().replace(',','.'))
+            if negative_only == True and montant >=0. :  continue
             cat = op.category
             person = op.person
             if cat in by_category: by_category[cat]+=montant
-            else: by_category[cat]=0.
+            else: by_category[cat]=montant
             if person in by_person: by_person[person]+=montant
-            else: by_person[person]=0.
+            else: by_person[person]=montant
                 
         return by_category,by_person
                 
@@ -289,20 +289,28 @@ class Application():
         cmd = self.ask("financial pie > ", helps=reponses)
         by_item={}
         filtered_operations = self.get_filtered_operations()
+        """
         for op in filtered_operations.values():
             montant = float(op.data[op_lib.montant].strip().replace(',','.'))
             cat = op.category
             person = op.person
             if cmd == 'category':
                 if cat in by_item: by_item[cat]+=montant
-                else: by_item[cat]=0.
+                else: by_item[cat]=montant
             elif cmd == 'person':
                 if person in by_item: by_item[person]+=montant
-                else: by_item[person]=0.
-                
+                else: by_item[person]=montant
+        """        
+        if cmd == 'category':
+            by_item,foo = self.get_total_by_item(filtered_operations,negative_only = True)
+        elif cmd == 'person':
+            foo, by_item = self.get_total_by_item(filtered_operations,negative_only = True)
         
         total = sum(by_item.values())
-        by_item = { k : v/total*100 for k,v in by_item.items() if v < 0. }
+        print("DEBUG 1", by_item)
+        print("DEBUG total", total)
+        by_item = { k : (v/total*100) for k,v in by_item.items() }
+        print("DEBUG 2", by_item)
 
         values = list(by_item.values())
         labels = list(by_item.keys())
