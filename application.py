@@ -196,6 +196,123 @@ class Application():
                         break
        
        
+    def get_filtered_operations(self): 
+        """
+        return dict containing only filtered operations
+        """
+        result = dict()
+        for op in self.operations.values():
+            filtered = False
+            for item, value in self.filters.items():
+                if item == op_lib.data_label[op_lib.category]:
+                    if op.category != value:
+                        filtered = True
+                elif item == op_lib.data_label[op_lib.person]:
+                    if op.person != value:
+                        filtered = True
+                elif item == op_lib.data_label[op_lib.montant]:
+                    montant = float(op.data[op_lib.montant].replace(',', '.'))
+                    signe = value.split()[0].strip()
+                    value =float(value.split()[1].strip())
+                    if signe == ">" :
+                        if montant < value:
+                            filtered = True
+                    elif signe == "<" :
+                        if montant > value:
+                            filtered = True
+                    elif signe == "=":
+                        if montant != value:
+                            filtered = True
+                elif op.data[op_lib.get_item_id(item)] != value:
+                    filtered = True
+                    
+            if filtered == False:
+                result[op.id]=op
+        print("DEBUG", result)        
+        return result
+    
+    def balance(self):
+        """
+        Compute and display account balance filtered by self.filters
+        """
+        solde = 0.
+        result = self.get_filtered_operations()
+        for op in result.values():
+            print (op)
+            solde+=float(op.data[op_lib.montant].replace(',','.'))
+        if solde >= 0.:
+            print(Back.GREEN)
+        else: print(Back.RED)
+        print('{} : {:,.2f} Eur'.format('Balance   ', solde))
+        print(Style.RESET_ALL)
+        
+    def pie(self):
+        """
+        Compute and display graphical pie account by person or caterories filtered by self.filters
+        """
+        reponses=('category', 'person')
+        cmd = self.ask("financial pie > ", helps=reponses)
+        by_item={}
+        for op in self.operations.values():
+            montant = float(op.data[op_lib.montant].strip().replace(',','.'))
+            cat = op.category
+            person = op.person
+            if cmd == 'category':
+                if cat in by_item: by_item[cat]+=montant
+                else: by_item[cat]=0.
+            elif cmd == 'person':
+                if person in by_item: by_item[person]+=montant
+                else: by_item[person]=0.
+                
+        
+        total = sum(by_item.values())
+        by_item = { k : v/total*100 for k,v in by_item.items() if v < 0. }
+
+        values = list(by_item.values())
+        labels = list(by_item.keys())
+        
+        import matplotlib.pyplot as plt
+        plt.pie(values, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
+        # Set aspect ratio to be equal so that pie is drawn as a circle.
+        plt.axis('equal')
+        plt.show()
+            
+    def modify_filters(self):
+        while True:
+            try: # 
+                helps={'list': 'list active filters', 'add': 'add filter', "suppress": 'suppress filter'} 
+                cmd=self.ask('financial filters > ', helps=helps)   
+                if cmd == "add":
+                    reponses=list(op_lib.data_label.values())
+                    item = self.ask("Add filter > ", helps=reponses)
+                    if item == op_lib.data_label[op_lib.person]:
+                        helps = self.persons
+                    elif item == op_lib.data_label[op_lib.category]:
+                        helps = self.categories
+                    else:
+                        helps=None
+                    new_value = self.ask("new filter value ? >",helps=helps)
+                    self.filters[item]=new_value
+                elif cmd == 'suppress':
+                    reponses=dict()
+                    for intem,value in list(self.filters.items()):
+                        reponses[intem] =  value
+                    if len(reponses)>0:
+                        item = self.ask("Enter item  to suppress > ",  helps=reponses)
+                        try:
+                            del self.filters[item]
+                            print(item, 'suppressed')
+                        except: print("Could not suppress this filter")
+                    else: print('no acvite filter')
+                    
+                elif cmd == 'list':
+                    print('activate filters list:')
+                    print('----------------------')
+                    for item,value in self.filters.items():
+                        print('{} {}'.format(item,value))
+                    
+            except UserInterrupt:
+                break
     def financial(self):
         """
         Get financial information, graphs, balance ...
@@ -206,105 +323,12 @@ class Application():
                     helps={'pie': 'draw pie', 'balance': 'get balance for current filters', "filters": 'add/suppress filters'} 
                     cmd=self.ask('financial review > ', helps=helps)   
                     if cmd == 'balance':
-                        print('account balance : ')
-                        solde = 0.
-                        for op in self.operations.values():
-                            filtered = False
-                            for item, value in self.filters.items():
-                                if item == op_lib.data_label[op_lib.category]:
-                                    if op.category != value:
-                                        filtered = True
-                                elif item == op_lib.data_label[op_lib.person]:
-                                    if op.person != value:
-                                        filtered = True
-                                elif item == op_lib.data_label[op_lib.montant]:
-                                    montant = float(op.data[op_lib.montant].replace(',', '.'))
-                                    signe = value.split()[0].strip()
-                                    value =float(value.split()[1].strip())
-                                    if signe == ">" :
-                                        if montant < value:
-                                            filtered = True
-                                    elif signe == "<" :
-                                        if montant > value:
-                                            filtered = True
-                                    elif signe == "=":
-                                        if montant != value:
-                                            filtered = True
-                                        
-                                elif op.data[op_lib.get_item_id(item)] != value:
-                                    filtered = True
-                            if filtered == False :
-                                print (op)
-                                solde+=float(op.data[op_lib.montant].replace(',','.'))
-                        if solde >= 0.:
-                            print(Back.GREEN)
-                        else: print(Back.RED)
-                        print('{} : {:,.2f} Eur'.format('Balance   ', solde))
-                        print(Style.RESET_ALL)
-                    if cmd == 'pie':
-                        reponses=('category', 'person')
-                        cmd = self.ask("financial pie > ", helps=reponses)
-                        by_item={}
-                        for op in self.operations.values():
-                            montant = float(op.data[op_lib.montant].strip().replace(',','.'))
-                            cat = op.category
-                            person = op.person
-                            if cmd == 'category':
-                                if cat in by_item: by_item[cat]+=montant
-                                else: by_item[cat]=0.
-                            elif cmd == 'person':
-                                if person in by_item: by_item[person]+=montant
-                                else: by_item[person]=0.
-                                
-                        
-                        total = sum(by_item.values())
-                        by_item = { k : v/total*100 for k,v in by_item.items() if v < 0. }
-    
-                        values = list(by_item.values())
-                        labels = list(by_item.keys())
-                        
-                        import matplotlib.pyplot as plt
-                        plt.pie(values, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
-                        # Set aspect ratio to be equal so that pie is drawn as a circle.
-                        plt.axis('equal')
-                        plt.show()
-                        
+                        self.balance()
+                    elif cmd == 'pie':
+                        self.pie()
                     elif cmd == 'filters':
-                        while True:
-                            try: # 
-                                helps={'list': 'list active filters', 'add': 'add filter', "suppress": 'suppress filter'} 
-                                cmd=self.ask('financial filters > ', helps=helps)   
-                                if cmd == "add":
-                                    reponses=list(op_lib.data_label.values())
-                                    item = self.ask("Add filter > ", helps=reponses)
-                                    if item == op_lib.data_label[op_lib.person]:
-                                        helps = self.persons
-                                    elif item == op_lib.data_label[op_lib.category]:
-                                        helps = self.categories
-                                    else:
-                                        helps=None
-                                    new_value = self.ask("new filter value ? >",helps=helps)
-                                    self.filters[item]=new_value
-                                elif cmd == 'suppress':
-                                    reponses=dict()
-                                    for intem,value in list(self.filters.items()):
-                                        reponses[intem] =  value
-                                    if len(reponses)>0:
-                                        item = self.ask("Enter item  to suppress > ",  helps=reponses)
-                                        try:
-                                            del self.filters[item]
-                                            print(item, 'suppressed')
-                                        except: print("Could not suppress this filter")
-                                    else: print('no acvite filter')
-                                    
-                                elif cmd == 'list':
-                                    print('activate filters list:')
-                                    print('----------------------')
-                                    for item,value in self.filters.items():
-                                        print('{} {}'.format(item,value))
-                                    
-                            except UserInterrupt:
-                                break
+                        self.modify_filters()
+                        
                 except UserInterrupt:
                     break
         except KeyboardInterrupt:
