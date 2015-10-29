@@ -5,6 +5,7 @@ import operation as op_lib
 import colorama
 from colorama import Fore, Back, Style
 import readline
+from operator import itemgetter
 import complete
 
 colorama.init()
@@ -257,19 +258,23 @@ class Application():
                 print(Style.RESET_ALL)
             
         by_category , by_person = self.get_total_by_item(filtered_operations,montant_filter=NEGATIVE_FILTER)
-        print("*********************\nCategories DEDIT\n********************")
-        for key,value  in by_category.items():
+        print("*********************\nCategories DEBIT\n********************")
+        listing = sorted(by_category.items(), key=itemgetter(1))
+        for key,value  in listing:
             print('{} {:,.2f} Eur'.format(key,value))
         print("*********************\nPersons DEBIT\n********************")
-        for key,value  in by_person.items():
+        listing = sorted(by_person.items(), key=itemgetter(1))
+        for key,value  in listing:
             print('{} {:,.2f} Eur'.format(key,value))
             
         by_category , by_person = self.get_total_by_item(filtered_operations,montant_filter=POSITIVE_FILTER)
         print("*********************\nCategories CREDIT\n********************")
-        for key,value  in by_category.items():
+        listing = sorted(by_category.items(), key=itemgetter(1))
+        for key,value  in listing:
             print('{} {:,.2f} Eur'.format(key,value))
         print("*********************\nPersons CREDIT\n********************")
-        for key,value  in by_person.items():
+        listing = sorted(by_person.items(), key=itemgetter(1))
+        for key,value  in listing:
             print('{} {:,.2f} Eur'.format(key,value))
             
         print(Back.GREEN)
