@@ -35,6 +35,7 @@ class Application():
         self.persons=list()
         self.operations=dict()
         self.db_changed = False
+        self.filters=dict()
      
         if type(args.cmd) == str: self.cmd = args.cmd
         if type(args.input) == str: self.input_file = args.input
@@ -199,7 +200,6 @@ class Application():
         """
         Get financial information, graphs, balance ...
         """
-        filters=dict()
         try:
             while True:
                 try:
@@ -210,7 +210,7 @@ class Application():
                         solde = 0.
                         for op in self.operations.values():
                             filtered = False
-                            for item, value in filters.items():
+                            for item, value in self.filters.items():
                                 if item == op_lib.data_label[op_lib.category]:
                                     if op.category != value:
                                         filtered = True
@@ -284,15 +284,15 @@ class Application():
                                     else:
                                         helps=None
                                     new_value = self.ask("new filter value ? >",helps=helps)
-                                    filters[item]=new_value
+                                    self.filters[item]=new_value
                                 elif cmd == 'suppress':
                                     reponses=dict()
-                                    for intem,value in list(filters.items()):
+                                    for intem,value in list(self.filters.items()):
                                         reponses[intem] =  value
                                     if len(reponses)>0:
                                         item = self.ask("Enter item  to suppress > ",  helps=reponses)
                                         try:
-                                            del filters[item]
+                                            del self.filters[item]
                                             print(item, 'suppressed')
                                         except: print("Could not suppress this filter")
                                     else: print('no acvite filter')
@@ -300,7 +300,7 @@ class Application():
                                 elif cmd == 'list':
                                     print('activate filters list:')
                                     print('----------------------')
-                                    for item,value in filters.items():
+                                    for item,value in self.filters.items():
                                         print('{} {}'.format(item,value))
                                     
                             except UserInterrupt:
