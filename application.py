@@ -340,15 +340,13 @@ class Application():
             filtered_operations = self.get_filtered_operations()
             by_cat,by_pers = self.get_total_by_item(filtered_operations,montant_filter = NEGATIVE_FILTER)
             if filter_item == op_lib.person:
-                total = sum(by_cat.values())
-                by_cat = { k : (v/total*100) for k,v in by_cat.items() }
-                values = list(by_cat.values())
-                labels = list(by_cat.keys())
+                totals = by_cat
             elif filter_item == op_lib.category:
-                total = sum(by_pers.values())
-                by_pers = { k : (v/total*100) for k,v in by_pers.items() }
-                values = list(by_pers.values())
-                labels = list(by_pers.keys())
+                totals = by_pers
+                total = sum(totals.values())
+                by_pers = { k : (v/total*100) for k,v in totals.items() }
+                values = list(totals.values())
+                labels = list(totals.keys())
                 
             line = int(plot_id/nb_row)
             row = plot_id%nb_row
