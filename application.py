@@ -10,6 +10,7 @@ from colorama import Fore, Back, Style
 import readline
 from operator import itemgetter
 import complete
+import time
 
 colorama.init()
 #print(Fore.RED + text)
@@ -239,11 +240,30 @@ class Application():
                     elif signe == "=":
                         if montant != value:
                             filtered = True
+                elif item == op_lib.data_label[op_lib.date_operation]:
+                    str_op=op.data[op_lib.date_operation]
+                    date_op = time.strptime(str_op, "%d/%m/%Y")
+                    signe = value.split(' ')[0].strip()
+                    date_op_filter = value.split(' ')[1].strip()
+                    try:
+                        date_op_filter = time.strptime(date_op_filter, "%d/%m/%Y")
+                    except : pass
+                    try:
+                        date_op_filter = time.strptime(date_op_filter, "%d/%m/%y")
+                    except : pass
+                    if signe == '<':
+                        if date_op > date_op_filter :filtered = True
+                    elif signe == '>':
+                        if date_op < date_op_filter :filtered = True
+                    elif signe == '=':
+                        if date_op != date_op_filter :filtered = True
+                    
                 elif op.data[op_lib.get_item_id(item)] != value:
                     filtered = True
                     
             if filtered == False:
                 result[op.id]=op
+                
         return result
     
     
@@ -442,15 +462,19 @@ class Application():
                 helps={'list': 'list active filters', 'add': 'add filter', "suppress": 'suppress filter'} 
                 cmd=self.ask('filters > ', helps=helps)   
                 if cmd == "add":
+                    new_value = None
                     reponses=list(op_lib.data_label.values())
                     item = self.ask("Add filter > ", helps=reponses)
                     if item == op_lib.data_label[op_lib.person]:
                         helps = self.persons
                     elif item == op_lib.data_label[op_lib.category]:
-                        helps = self.categories
+                        helps = self.caterories
+                    elif item == op_lib.data_label[op_lib.date_operation]:
+                        new_value = self.ask("'>,<,= DD/MM/YY' :")
                     else:
                         helps=None
-                    new_value = self.ask("new filter value ? >",helps=helps)
+                    if new_value == None:
+                        new_value = self.ask("new filter value ?:",helps=helps)
                     self.filters[item]=new_value
                 elif cmd == 'suppress':
                     reponses=dict()
@@ -512,7 +536,7 @@ class Application():
                             reponses = [ 'list', 'add', 'suppress']
                             cmd = self.ask('edit categories >', helps=reponses)
                             if cmd == 'add':
-                                new_value = self.ask('new value ? >')
+                                new_value = self.ask('new value ?:')
                                 self.categories.append(new_value)
                             elif cmd == 'suppress':
                                 cat = self.ask('category to supress ? >',helps=self.categories)
