@@ -369,45 +369,52 @@ class Application():
         # search months
         credits = dict()
         debits = dict()
-        for ref,op in self.operations.items():
+        for ref,op in self.get_filtered_operations().items():
             str_op=op.data[op_lib.date_operation]
             date_op = time.strptime(str_op, "%d/%m/%Y")
-            print('data_op' , str(date_op))
             montant = float(op.data[op_lib.montant].replace(',', '.'))
             if montant >= 0:
                 foo = credits
             else: foo = debits
             date_str= (time.strftime("%b %Y", date_op)).strip()
-            print('['+date_str+']')
             try:
                 foo[date_str]+=abs(montant)
             except KeyError:
                 foo[date_str]=abs(montant)
+                
+        foo = sorted(foo)
                     
-        print('credit', credits)
-        fig, ax = plt.subplots()
-        index = np.arange(len(credits))
-        bar_width = 0.35
-        opacity = 0.4
-        rects1 = plt.bar(index, list(credits.values()), bar_width,
-                        alpha=opacity,
-                        color='b',
-                        label='credits')
+        if len(credits)+len(debits) >= 2:
+            fig, ax = plt.subplots()
+            index = np.arange(len(credits))
+            bar_width =0.45
+            opacity = 0.5
+            
+            if len(credits) > 0:
+                rects1 = plt.bar(index, list(credits.values()), bar_width,
+                                alpha=opacity,
+                                color='b',
+                                label='credits')
 
-        rects2 = plt.bar(index+bar_width/10, list(debits.values()), bar_width,
-                        alpha=opacity,
-                        color='r',
-                        label='debits')
+            if len(debits) > 0:
+                rects2 = plt.bar(index+bar_width/10, list(debits.values()), bar_width,
+                                alpha=opacity,
+                                color='r',
+                                label='debits')
+            ax.grid(which='major', axis='x', linewidth=0.75, linestyle='-', color='0.75')
+            ax.grid(which='minor', axis='x', linewidth=0.25, linestyle='-', color='0.75')
+            ax.grid(which='major', axis='y', linewidth=0.75, linestyle='-', color='0.75')
+            ax.grid(which='minor', axis='y', linewidth=0.25, linestyle='-', color='0.75')
 
-        plt.xlabel('Group')
-        plt.ylabel('Scores')
-        plt.title('Debit / Credit mensuels')
-        
-        plt.xticks(index + bar_width,  list(credits.keys()))
-        plt.legend()
+            plt.xlabel('Mois')
+            plt.ylabel('Montant(Eur)')
+            plt.title('Debit / Credit mensuels')
+            
+            plt.xticks(index + bar_width/1.9,  list(credits.keys()))
+            plt.legend()
 
-        plt.tight_layout()
-        plt.show()
+            plt.tight_layout()
+            plt.show()
         
     def draw_global_pies(self,min_percent=0): 
         filtered_operations = self.get_filtered_operations()
@@ -426,7 +433,7 @@ class Application():
         
     def draw_by_item_pies(self,item,min_percent=0): 
         """
-        Compute and display graphical pie account by person or caterories filtered by self.filters
+        Compute and display graphical pie account by person or categories filtered by self.filters
         Parameters
         **********
         item: str, 'person' or 'category'
@@ -526,13 +533,14 @@ class Application():
                     if item == op_lib.data_label[op_lib.person]:
                         helps = self.persons
                     elif item == op_lib.data_label[op_lib.category]:
-                        helps = self.caterories
+                        helps = self.categories
                     elif item == op_lib.data_label[op_lib.date_operation]:
                         new_value = self.ask("START END [DD/MM/YY]:")
                     else:
                         helps=None
+                    
                     if new_value == None:
-                        new_value = self.ask("new filter value ?:",helps=helps)
+                        new_value = self.ask("new filter value [! for not] ?:",helps=helps)    
                     self.filters[item]=new_value
                 elif cmd == 'suppress':
                     reponses=dict()
