@@ -243,20 +243,17 @@ class Application():
                 elif item == op_lib.data_label[op_lib.date_operation]:
                     str_op=op.data[op_lib.date_operation]
                     date_op = time.strptime(str_op, "%d/%m/%Y")
-                    signe = value.split(' ')[0].strip()
-                    date_op_filter = value.split(' ')[1].strip()
+                    date_op_filter_begin = value.split(' ')[0].strip()
+                    date_op_filter_end = value.split(' ')[1].strip()
                     try:
-                        date_op_filter = time.strptime(date_op_filter, "%d/%m/%Y")
+                        date_op_filter_begin = time.strptime(date_op_filter_begin, "%d/%m/%Y")
+                        date_op_filter_end = time.strptime(date_op_filter_end, "%d/%m/%Y")
                     except : pass
                     try:
-                        date_op_filter = time.strptime(date_op_filter, "%d/%m/%y")
+                        date_op_filter_begin = time.strptime(date_op_filter_begin, "%d/%m/%y")
+                        date_op_filter_end = time.strptime(date_op_filter_end, "%d/%m/%y")
                     except : pass
-                    if signe == '<':
-                        if date_op > date_op_filter :filtered = True
-                    elif signe == '>':
-                        if date_op < date_op_filter :filtered = True
-                    elif signe == '=':
-                        if date_op != date_op_filter :filtered = True
+                    if date_op > date_op_filter_end or date_op < date_op_filter_begin :filtered = True
                     
                 elif op.data[op_lib.get_item_id(item)] != value:
                     filtered = True
@@ -368,7 +365,9 @@ class Application():
         
         
     def draw_global_pies(self,min_percent=0): 
-        by_cat,by_pers = self.get_total_by_item(self.operations,montant_filter = NEGATIVE_FILTER)
+        filtered_operations = self.get_filtered_operations()
+        #by_cat,by_pers = self.get_total_by_item(self.operations,montant_filter = NEGATIVE_FILTER)
+        by_cat,by_pers = self.get_total_by_item(filtered_operations,montant_filter = NEGATIVE_FILTER)
         pies={'global category': by_cat} 
         self.draw_pies(pies,min_percent=min_percent)
         pies={'global person': by_pers} 
@@ -439,17 +438,17 @@ class Application():
             
             if nb_plot == 1 :
                 # Filters < min_percent values + change key by adding currency
-                totals_percent = { k + '{:,.2f} Eur'.format(v) : (v/total*100) for k,v in totals.items()  if  (v/total*100) > min_percent }
+                totals_percent = { k + ' {:,.2f} Eur'.format(-v) : (v/total*100) for k,v in totals.items()  if  (v/total*100) > min_percent }
                 slices = list(totals_percent.values())
                 plt.pie(slices, colors=colors,labels=totals_percent.keys(), autopct='%1.1f%%', shadow=True, startangle=340)
                 
                 total_filter = { k : v for k,v in totals.items()  if  (v/total*100) > min_percent }
                 total_str = '{:,.2f} Eur'.format(sum(total_filter.values()))
-                plt.title(key+" " + str(total_str))
+                plt.title(key+" " + str(total_str),loc='right')
             else:
                 line = int(plot_id/nb_row)
                 row = plot_id%nb_row
-                totals_percent = { k + '{:,.2f} Eur'.format(v) : (v/total*100) for k,v in totals.items()  if  (v/total*100) > min_percent }
+                totals_percent = { k + ' {:,.2f} Eur'.format(-v) : (v/total*100) for k,v in totals.items()  if  (v/total*100) > min_percent }
                 slices = list(totals_percent.values())
                 axarr[line,row].pie(slices,colors=colors, labels=totals_percent.keys(), autopct='%1.1f%%', shadow=True, startangle=300)
                 total_filter = { k : v for k,v in totals.items()  if  (v/total*100) > min_percent }
@@ -479,7 +478,7 @@ class Application():
                     elif item == op_lib.data_label[op_lib.category]:
                         helps = self.caterories
                     elif item == op_lib.data_label[op_lib.date_operation]:
-                        new_value = self.ask("'>,<,= DD/MM/YY' :")
+                        new_value = self.ask("START END [DD/MM/YY]:")
                     else:
                         helps=None
                     if new_value == None:
@@ -536,7 +535,7 @@ class Application():
         op_id=None
         while True:
             try:
-                helps={'categories':'manage categories', 'persons':'manage persons', 'operations': 'manage operations'} 
+                helps={'categories':'manage categories', 'persons':'manage persons', 'operations': 'ǹmanage operations'} 
                 item = self.ask("edit > ",helps=helps)
                 #categories
                 if item == 'categories' or item == 'c': 
@@ -677,7 +676,8 @@ class Application():
            
  
     def list_pic(self):
-        print('operations',self.operations)
+        filtered_operations = self.get_filtered_operations() 
+        print('operations',filtered_operations)
         print('person',self.persons)
         print('categories',self.categories)
 
