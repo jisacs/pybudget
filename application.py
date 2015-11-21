@@ -348,7 +348,7 @@ class Application():
         min_percent = 3
         while True:
             try:
-                helps=('min_percent', 'global', op_lib.data_label[op_lib.person],op_lib.data_label[op_lib.category])  
+                helps=('min_percent','bar', 'global', op_lib.data_label[op_lib.person],op_lib.data_label[op_lib.category])  
                 cmd = self.ask("graph [" + str(min_percent) + "%] ",helps=helps)
                 if cmd == 'global':
                     self.draw_global_pies(min_percent=min_percent)
@@ -356,6 +356,8 @@ class Application():
                     self.draw_by_item_pies(op_lib.person,min_percent=min_percent)
                 elif cmd == op_lib.data_label[op_lib.category]:
                     self.draw_by_item_pies(op_lib.category,min_percent=min_percent)
+                elif cmd == 'bar':
+                    self.draw_bar()
                 elif cmd == 'min_percent':
                     min_percent =self.ask_int("graph min percent ? > ")
             except UserInterrupt:
@@ -363,6 +365,49 @@ class Application():
             except KeyboardInterrupt:
                 break
         
+    def draw_bar(self):
+        # search months
+        credits = dict()
+        debits = dict()
+        for ref,op in self.operations.items():
+            str_op=op.data[op_lib.date_operation]
+            date_op = time.strptime(str_op, "%d/%m/%Y")
+            print('data_op' , str(date_op))
+            montant = float(op.data[op_lib.montant].replace(',', '.'))
+            if montant >= 0:
+                foo = credits
+            else: foo = debits
+            date_str= (time.strftime("%b %Y", date_op)).strip()
+            print('['+date_str+']')
+            try:
+                foo[date_str]+=abs(montant)
+            except KeyError:
+                foo[date_str]=abs(montant)
+                    
+        print('credit', credits)
+        fig, ax = plt.subplots()
+        index = np.arange(len(credits))
+        bar_width = 0.35
+        opacity = 0.4
+        rects1 = plt.bar(index, list(credits.values()), bar_width,
+                        alpha=opacity,
+                        color='b',
+                        label='credits')
+
+        rects2 = plt.bar(index+bar_width, list(debits.values()), bar_width,
+                        alpha=opacity,
+                        color='r',
+                        label='debits')
+
+        plt.xlabel('Group')
+        plt.ylabel('Scores')
+        plt.title('Debit / Credit mensuels')
+        
+        plt.xticks(index + bar_width,  list(credits.keys()))
+        plt.legend()
+
+        plt.tight_layout()
+        plt.show()
         
     def draw_global_pies(self,min_percent=0): 
         filtered_operations = self.get_filtered_operations()
@@ -442,7 +487,7 @@ class Application():
             
             if nb_plot == 1 :
                 # Filters < min_percent values + change key by adding currency
-                totals_percent = { k + ' {:,.2f} Eur'.format(-v) : (v/total*100) for k,v in totals.items()  if  (v/total*100) > min_percent }
+                totals_percent = { k + ' {:,.2f} Eur'.format(v) : (v/total*100) for k,v in totals.items()  if  (v/total*100) > min_percent }
                 slices = list(totals_percent.values())
                 plt.pie(slices, colors=colors,labels=totals_percent.keys(), autopct='%1.1f%%', shadow=True, startangle=340)
                 
@@ -453,7 +498,7 @@ class Application():
             else:
                 line = int(plot_id/nb_row)
                 row = plot_id%nb_row
-                totals_percent = { k + ' {:,.2f} Eur'.format(-v) : (v/total*100) for k,v in totals.items()  if  (v/total*100) > min_percent }
+                totals_percent = { k + ' {:,.2f} Eur'.format(v) : (v/total*100) for k,v in totals.items()  if  (v/total*100) > min_percent }
                 slices = list(totals_percent.values())
                 axarr[line,row].pie(slices,colors=colors, labels=totals_percent.keys(), autopct='%1.1f%%', shadow=True, startangle=300)
                 total_filter = { k : v for k,v in totals.items()  if  (v/total*100) > min_percent }
