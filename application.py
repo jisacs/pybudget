@@ -394,7 +394,7 @@ class Application():
                         color='b',
                         label='credits')
 
-        rects2 = plt.bar(index+bar_width, list(debits.values()), bar_width,
+        rects2 = plt.bar(index, list(debits.values()), bar_width,
                         alpha=opacity,
                         color='r',
                         label='debits')
