@@ -430,20 +430,30 @@ class Application():
                 nb_line+=1
             f, axarr = plt.subplots(nb_line,nb_row)
         
+        
         for key,totals in pies.items():    
+            print('key',key)
+            print('totals',totals)
             total = sum(totals.values())
-            totals = { k : (v/total*100) for k,v in totals.items() if  (v/total*100) > min_percent }
+            #totals_percent = { k : (v/total*100) for k,v in totals.items() if  (v/total*100) > min_percent }
+            
             # We have remove entrry that  percent lower tahn  min_percent, need to recompure total
-            total = sum(totals.values())
+            #total = sum(totals.values())
             colors = cmap(np.linspace(0., 1., len(totals)))
-            slices = list(totals.values())
+            #slices = totals_percent.values()
             
             if nb_plot == 1 :
-                plt.pie(slices, colors=colors,labels=totals.keys(), autopct='%1.1f%%', shadow=True, startangle=340)
+                totals_percent = { k + '{:,.2f} Eur'.format(v) : (v/total*100) for k,v in totals.items()  if  (v/total*100) > min_percent }
+                slices = list(totals_percent.values())
+                plt.pie(slices, colors=colors,labels=totals_percent.keys(), autopct='%1.1f%%', shadow=True, startangle=340)
+                total_str = '{:,.2f} Eur'.format(total)
+                plt.title(key+" " + str(total_str))
             else:
                 line = int(plot_id/nb_row)
                 row = plot_id%nb_row
-                axarr[line,row].pie(slices,colors=colors, labels=totals.keys(), autopct='%1.1f%%', shadow=True, startangle=300)
+                totals_percent = { k + '{:,.2f} Eur'.format(v) : (v/total*100) for k,v in totals.items()  if  (v/total*100) > min_percent }
+                slices = list(totals_percent.values())
+                axarr[line,row].pie(slices,colors=colors, labels=totals_percent.keys(), autopct='%1.1f%%', shadow=True, startangle=300)
                 total_str = '{:,.2f} Eur'.format(total)
                 axarr[line,row].set_title(key+" " + str(total_str))
                 plot_id+=1
