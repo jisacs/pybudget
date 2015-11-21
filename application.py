@@ -348,7 +348,7 @@ class Application():
                 
                 
     def pie(self):
-        min_percent = 0
+        min_percent = 3
         while True:
             try:
                 helps=('min_percent', 'global', op_lib.data_label[op_lib.person],op_lib.data_label[op_lib.category])  
@@ -435,18 +435,16 @@ class Application():
             print('key',key)
             print('totals',totals)
             total = sum(totals.values())
-            #totals_percent = { k : (v/total*100) for k,v in totals.items() if  (v/total*100) > min_percent }
-            
-            # We have remove entrry that  percent lower tahn  min_percent, need to recompure total
-            #total = sum(totals.values())
             colors = cmap(np.linspace(0., 1., len(totals)))
-            #slices = totals_percent.values()
             
             if nb_plot == 1 :
+                # Filters < min_percent values + change key by adding currency
                 totals_percent = { k + '{:,.2f} Eur'.format(v) : (v/total*100) for k,v in totals.items()  if  (v/total*100) > min_percent }
                 slices = list(totals_percent.values())
                 plt.pie(slices, colors=colors,labels=totals_percent.keys(), autopct='%1.1f%%', shadow=True, startangle=340)
-                total_str = '{:,.2f} Eur'.format(total)
+                
+                total_filter = { k : v for k,v in totals.items()  if  (v/total*100) > min_percent }
+                total_str = '{:,.2f} Eur'.format(sum(total_filter.values()))
                 plt.title(key+" " + str(total_str))
             else:
                 line = int(plot_id/nb_row)
@@ -454,7 +452,8 @@ class Application():
                 totals_percent = { k + '{:,.2f} Eur'.format(v) : (v/total*100) for k,v in totals.items()  if  (v/total*100) > min_percent }
                 slices = list(totals_percent.values())
                 axarr[line,row].pie(slices,colors=colors, labels=totals_percent.keys(), autopct='%1.1f%%', shadow=True, startangle=300)
-                total_str = '{:,.2f} Eur'.format(total)
+                total_filter = { k : v for k,v in totals.items()  if  (v/total*100) > min_percent }
+                total_str = '{:,.2f} Eur'.format(sum(total_filter.values()))
                 axarr[line,row].set_title(key+" " + str(total_str))
                 plot_id+=1
             # Set aspect ratio to be equal so that pie is drawn as a circle.
