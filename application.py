@@ -171,7 +171,7 @@ class Application():
     def menu(self):
         try:
             while True:
-                helps= {'pie': 'graphical pies', 'filters': 'list/add suppress filters', 'save': 'to save','add ': 'to add new operations from csv file',
+                helps= {'graph': 'graphical representation', 'filters': 'list/add suppress filters', 'save': 'to save','add ': 'to add new operations from csv file',
                         'edit': 'to edit database', 'list':'to list database content',
                         'open_db ':'open database file', 'open_csv': 'open csv file' ,
                         'financial   ': 'financial review'} 
@@ -195,8 +195,8 @@ class Application():
                     self.financial()
                 elif cmd == 'filters':
                     self.manage_filters()
-                elif cmd == 'pie':
-                    self.pie()
+                elif cmd == 'graph':
+                    self.graph()
                 else: print(cmd, ": command not found")
         except UserInterrupt:
             pass
@@ -344,12 +344,12 @@ class Application():
                 
                 
                 
-    def pie(self):
+    def graph(self):
         min_percent = 3
         while True:
             try:
                 helps=('min_percent', 'global', op_lib.data_label[op_lib.person],op_lib.data_label[op_lib.category])  
-                cmd = self.ask("pie [" + str(min_percent) + "%] ",helps=helps)
+                cmd = self.ask("graph [" + str(min_percent) + "%] ",helps=helps)
                 if cmd == 'global':
                     self.draw_global_pies(min_percent=min_percent)
                 elif cmd == op_lib.data_label[op_lib.person]:
@@ -357,7 +357,7 @@ class Application():
                 elif cmd == op_lib.data_label[op_lib.category]:
                     self.draw_by_item_pies(op_lib.category,min_percent=min_percent)
                 elif cmd == 'min_percent':
-                    min_percent =self.ask_int("pie min percent ? > ")
+                    min_percent =self.ask_int("graph min percent ? > ")
             except UserInterrupt:
                 break
             except KeyboardInterrupt:
@@ -366,13 +366,17 @@ class Application():
         
     def draw_global_pies(self,min_percent=0): 
         filtered_operations = self.get_filtered_operations()
-        #by_cat,by_pers = self.get_total_by_item(self.operations,montant_filter = NEGATIVE_FILTER)
         by_cat,by_pers = self.get_total_by_item(filtered_operations,montant_filter = NEGATIVE_FILTER)
-        pies={'global category': by_cat} 
+        pies={'Debits par categorie': by_cat} 
         self.draw_pies(pies,min_percent=min_percent)
-        pies={'global person': by_pers} 
+        pies={'Debit par personne': by_pers} 
         self.draw_pies(pies,min_percent=min_percent)
         
+        by_cat,by_pers = self.get_total_by_item(filtered_operations,montant_filter = POSITIVE_FILTER)
+        pies={'Credit par categorie': by_cat} 
+        self.draw_pies(pies,min_percent=min_percent)
+        pies={'Credit personne': by_pers} 
+        self.draw_pies(pies,min_percent=min_percent)
         
         
     def draw_by_item_pies(self,item,min_percent=0): 
@@ -444,7 +448,8 @@ class Application():
                 
                 total_filter = { k : v for k,v in totals.items()  if  (v/total*100) > min_percent }
                 total_str = '{:,.2f} Eur'.format(sum(total_filter.values()))
-                plt.title(key+" " + str(total_str),loc='right')
+                
+                plt.title(key+"\n" + str(total_str)+ '\n' + str(self.filters),loc='right')
             else:
                 line = int(plot_id/nb_row)
                 row = plot_id%nb_row
@@ -453,7 +458,7 @@ class Application():
                 axarr[line,row].pie(slices,colors=colors, labels=totals_percent.keys(), autopct='%1.1f%%', shadow=True, startangle=300)
                 total_filter = { k : v for k,v in totals.items()  if  (v/total*100) > min_percent }
                 total_str = '{:,.2f} Eur'.format(sum(total_filter.values()))
-                axarr[line,row].set_title(key+" " + str(total_str))
+                axarr[line,row].set_title(key+"\n" + str(total_str))
                 plot_id+=1
             # Set aspect ratio to be equal so that pie is drawn as a circle.
             plt.axis('equal')
