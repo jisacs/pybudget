@@ -149,7 +149,7 @@ class Application():
                 return reponse
             else: # Help exist
                 for key in helps:
-                    if key.strip() == reponse.strip():
+                    if key.strip() == reponse.strip() or  key.strip() == reponse[1:].strip():
                         return reponse
                 print("not a valid command")
                 
@@ -220,31 +220,38 @@ class Application():
         result = dict()
         for op in self.operations.values():
             filtered = False
-            for item, value in self.filters.items():
-                if item == op_lib.data_label[op_lib.category]:
-                    if op.category != value:
+            for filter_type, filter_value in self.filters.items():
+                #from IPython import embed; embed()
+                if filter_type == op_lib.data_label[op_lib.category]:
+                    if filter_value[0] == '!':
+                        if op.category == filter_value[1:]:
+                            filtered = True
+                    elif op.category != filter_value:
                         filtered = True
-                elif item == op_lib.data_label[op_lib.person]:
-                    if op.person != value:
+                elif filter_type == op_lib.data_label[op_lib.person]:
+                    if filter_value[0] == '!':
+                        if op.person == filter_value[1:]:
+                            filtered = True
+                    elif op.person != filter_value:
                         filtered = True
-                elif item == op_lib.data_label[op_lib.montant]:
+                elif filter_type == op_lib.data_label[op_lib.montant]:
                     montant = float(op.data[op_lib.montant].replace(',', '.'))
-                    signe = value.split()[0].strip()
-                    value =float(value.split()[1].strip())
+                    signe = filter_value.split()[0].strip()
+                    filter_value =float(filter_value.split()[1].strip())
                     if signe == ">" :
-                        if montant < value:
+                        if montant < filter_value:
                             filtered = True
                     elif signe == "<" :
-                        if montant > value:
+                        if montant > filter_value:
                             filtered = True
                     elif signe == "=":
-                        if montant != value:
+                        if montant != filter_value:
                             filtered = True
-                elif item == op_lib.data_label[op_lib.date_operation]:
+                elif filter_type == op_lib.data_label[op_lib.date_operation]:
                     str_op=op.data[op_lib.date_operation]
                     date_op = time.strptime(str_op, "%d/%m/%Y")
-                    date_op_filter_begin = value.split(' ')[0].strip()
-                    date_op_filter_end = value.split(' ')[1].strip()
+                    date_op_filter_begin = filter_value.split(' ')[0].strip()
+                    date_op_filter_end = filter_value.split(' ')[1].strip()
                     try:
                         date_op_filter_begin = time.strptime(date_op_filter_begin, "%d/%m/%Y")
                         date_op_filter_end = time.strptime(date_op_filter_end, "%d/%m/%Y")
@@ -255,7 +262,7 @@ class Application():
                     except : pass
                     if date_op > date_op_filter_end or date_op < date_op_filter_begin :filtered = True
                     
-                elif op.data[op_lib.get_item_id(item)] != value:
+                elif op.data[op_lib.get_item_id(item)] != filter_value:
                     filtered = True
                     
             if filtered == False:
@@ -382,7 +389,7 @@ class Application():
             except KeyError:
                 foo[date_str]=abs(montant)
                 
-        foo = sorted(foo)
+            foo = sorted(foo)
                     
         if len(credits)+len(debits) >= 2:
             fig, ax = plt.subplots()
