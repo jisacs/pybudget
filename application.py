@@ -674,7 +674,7 @@ class Application():
                                     print('select an operation first.')
                                 pass
                             elif cmd == 'select':
-                                print("operations listing:",self.operations)
+                                print("operations listing:",self.get_filtered_operations())
                                 op_id = self.ask_int('operatoperations id ?:')
                                 op = self.operations[op_id]
                                 # user can set new value or let existing one
